@@ -6,10 +6,46 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func main() {
-	day1()
+	//day1()
+	day2()
+}
+
+func day2() {
+	file, err := os.Open("./2/input.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	var commands [][]string
+	var depth, horizontalPosition int64 = 0, 0
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		command := strings.Split(scanner.Text(), " ")
+		commands = append(commands, command)
+		movement := command[0]
+		amount, _ := strconv.ParseInt(command[1], 10, 64)
+		//log.Println("Going", movement, "amount", amount)
+		if movement == "forward" {
+			horizontalPosition = horizontalPosition + amount
+		}
+		if movement == "down" {
+			depth = depth + amount
+		}
+		if movement == "up" {
+			depth = depth - amount
+		}
+
+	}
+
+	log.Println("------- PART ONE ---------")
+	log.Println("Command length", len(commands))
+	log.Println("Horizontal", horizontalPosition, "Depth", depth, "Answer", horizontalPosition*depth)
+
 }
 
 func day1() {
