@@ -46,6 +46,24 @@ func day2() {
 	log.Println("Command length", len(commands))
 	log.Println("Horizontal", horizontalPosition, "Depth", depth, "Answer", horizontalPosition*depth)
 
+	var hPos2, depth2, aim int64 = 0, 0, 0
+	for _, c := range commands {
+		movement := c[0]
+		amount, _ := strconv.ParseInt(c[1], 10, 64)
+		if movement == "down" {
+			aim = aim + amount
+		}
+		if movement == "up" {
+			aim = aim - amount
+		}
+		if movement == "forward" {
+			hPos2 = hPos2 + amount
+			depth2 = depth2 + (aim * amount)
+		}
+	}
+	log.Println("---- PART TWO ----")
+	log.Println("Horizontal 2", hPos2, "Depth", depth2, "Answer", hPos2*depth2)
+
 }
 
 func day1() {
