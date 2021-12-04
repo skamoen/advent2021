@@ -50,8 +50,14 @@ func day4() {
 
 	}
 
+	boardsWon := make([]bool, len(boards))
+	winCounter := 0
+
 	for _, drawing := range strings.Split(drawings, ",") {
 		for i := 0; i < len(boards); i++ {
+			if boardsWon[i] {
+				continue
+			}
 			for j := 0; j < len(boards[i].rows); j++ {
 				for k := 0; k < len(boards[i].rows[j]); k++ {
 					// Mark number
@@ -61,24 +67,26 @@ func day4() {
 						boards[i].columnCounter[k]++
 
 						if boards[i].rowCounter[j] == 5 || boards[i].columnCounter[k] == 5 {
-							// Sum the score
-							var boardSum int64 = 0
-							for x := 0; x < len(boards[i].rows); x++ {
-								for y := 0; y < len(boards[i].rows[x]); y++ {
-									parseInt, _ := strconv.ParseInt(boards[i].rows[x][y], 10, 64)
-									boardSum += parseInt
+							if !boardsWon[i] {
+								// Sum the score
+								var boardSum int64 = 0
+								for x := 0; x < len(boards[i].rows); x++ {
+									for y := 0; y < len(boards[i].rows[x]); y++ {
+										parseInt, _ := strconv.ParseInt(boards[i].rows[x][y], 10, 64)
+										boardSum += parseInt
+									}
 								}
+								parseDraw, _ := strconv.ParseInt(drawing, 10, 64)
+								winCounter++
+								log.Println("Result for board", i, ":", boardSum*parseDraw, winCounter, "final draw", drawing)
+								boardsWon[i] = true
 							}
-							parseDraw, _ := strconv.ParseInt(drawing, 10, 64)
-							log.Println("Result", boardSum*parseDraw)
-							return
 						}
 					}
 				}
 			}
 		}
 	}
-
 }
 
 func day3() {
