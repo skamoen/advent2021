@@ -12,7 +12,73 @@ import (
 func main() {
 	//day1()
 	//day2()
-	day3()
+	//day3()
+	day4()
+}
+
+type board struct {
+	rows          [][]string
+	rowCounter    []int
+	columnCounter []int
+}
+
+func day4() {
+	file, err := os.Open("./4/input.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Scan()
+	drawings := scanner.Text()
+	scanner.Scan()
+
+	var boards = []board{{columnCounter: make([]int, 5), rowCounter: make([]int, 5)}}
+	currentBoard := 0
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "" {
+			currentBoard++
+			boards = append(boards, board{columnCounter: make([]int, 5), rowCounter: make([]int, 5)})
+			continue
+		}
+
+		nums := strings.Fields(line)
+		boards[currentBoard].rows = append(boards[currentBoard].rows, nums)
+
+	}
+
+	for _, drawing := range strings.Split(drawings, ",") {
+		for i := 0; i < len(boards); i++ {
+			for j := 0; j < len(boards[i].rows); j++ {
+				for k := 0; k < len(boards[i].rows[j]); k++ {
+					// Mark number
+					if boards[i].rows[j][k] == drawing {
+						boards[i].rows[j][k] = "0"
+						boards[i].rowCounter[j]++
+						boards[i].columnCounter[k]++
+
+						if boards[i].rowCounter[j] == 5 || boards[i].columnCounter[k] == 5 {
+							// Sum the score
+							var boardSum int64 = 0
+							for x := 0; x < len(boards[i].rows); x++ {
+								for y := 0; y < len(boards[i].rows[x]); y++ {
+									parseInt, _ := strconv.ParseInt(boards[i].rows[x][y], 10, 64)
+									boardSum += parseInt
+								}
+							}
+							parseDraw, _ := strconv.ParseInt(drawing, 10, 64)
+							log.Println("Result", boardSum*parseDraw)
+							return
+						}
+					}
+				}
+			}
+		}
+	}
+
 }
 
 func day3() {
