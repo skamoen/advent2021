@@ -14,7 +14,42 @@ func main() {
 	//day2()
 	//day3()
 	//day4()
-	day5()
+	//day5()
+	day6()
+}
+
+func day6() {
+	file, err := os.Open("./6/input.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	var fish []int
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		f := strings.Split(line, ",")
+		for _, s := range f {
+			i, _ := strconv.Atoi(s)
+			fish = append(fish, i)
+		}
+	}
+
+	for i := 0; i < 80; i++ {
+		nFish := len(fish)
+		for i := 0; i < nFish; i++ {
+			if fish[i] == 0 {
+				fish[i] = 6
+				fish = append(fish, 8)
+				continue
+			}
+			fish[i]--
+		}
+	}
+
+	log.Println("No. fish", len(fish))
 }
 
 func day5() {
@@ -85,67 +120,6 @@ func day5() {
 	}
 
 	log.Println("Part 2 Overlapping", overlap)
-}
-
-func makeVectorFromString(from, to string) vector {
-	fromSplit := strings.Split(from, ",")
-	toSplit := strings.Split(to, ",")
-
-	x1, _ := strconv.Atoi(fromSplit[0])
-	y1, _ := strconv.Atoi(fromSplit[1])
-	x2, _ := strconv.Atoi(toSplit[0])
-	y2, _ := strconv.Atoi(toSplit[1])
-
-	return makeVector(x1, y1, x2, y2)
-}
-
-func makeVector(x1, y1, x2, y2 int) vector {
-	v := vector{}
-
-	if x1 == x2 {
-		v.direction = "v"
-		if y1 < y2 {
-			v.start = [2]int{x1, y1}
-			v.length = y2 - y1
-		} else {
-			v.start = [2]int{x2, y2}
-			v.length = y1 - y2
-		}
-	} else if y1 == y2 {
-		v.direction = "h"
-		if x1 < x2 {
-			v.start = [2]int{x1, y1}
-			v.length = x2 - x1
-		} else {
-			v.start = [2]int{x2, y2}
-			v.length = x1 - x2
-		}
-	} else {
-		if x1 < x2 {
-			v.start = [2]int{x1, y1}
-			v.length = x2 - x1
-			if y1 < y2 {
-				v.direction = "du"
-			} else {
-				v.direction = "dd"
-			}
-		} else {
-			v.start = [2]int{x2, y2}
-			v.length = x1 - x2
-			if y1 < y2 {
-				v.direction = "dd"
-			} else {
-				v.direction = "du"
-			}
-		}
-	}
-	return v
-}
-
-type vector struct {
-	direction string
-	start     [2]int
-	length    int
 }
 
 type board struct {
