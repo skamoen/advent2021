@@ -27,6 +27,8 @@ func day6() {
 
 	var fish []int
 
+	fishPerDay := make([]int, 256)
+
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -34,6 +36,7 @@ func day6() {
 		for _, s := range f {
 			i, _ := strconv.Atoi(s)
 			fish = append(fish, i)
+			fishPerDay[i]++
 		}
 	}
 
@@ -48,8 +51,21 @@ func day6() {
 			fish[i]--
 		}
 	}
+	log.Println("No. fish after 80  days", len(fish))
 
-	log.Println("No. fish", len(fish))
+	for i := 0; i < 256; i++ {
+		fishOnZero := fishPerDay[0]
+		newFishPerDay := append(fishPerDay[1:], 0)
+		newFishPerDay[6] += fishOnZero
+		newFishPerDay[8] = fishOnZero
+		fishPerDay = newFishPerDay
+	}
+
+	nFish := 0
+	for _, n := range fishPerDay {
+		nFish += n
+	}
+	log.Println("No. Fish after 256 days", nFish)
 }
 
 func day5() {
