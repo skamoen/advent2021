@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -15,17 +17,214 @@ func main() {
 	//day3()
 	//day4()
 	//day5()
-	day6()
+	//day6()
+	//day7()
+	day8()
+}
+
+func day8() {
+	file, err := os.Open("./8/input.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	var inputs []*display
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		d := &display{knownSignals: make(map[int][]string, 10)}
+
+		f := strings.Split(line, " | ")
+
+		for _, digit := range strings.Fields(f[0]) {
+			d.wires = append(d.wires, stringToCharArray(digit))
+		}
+
+		for _, digit := range strings.Fields(f[1]) {
+			d.output = append(d.output, stringToCharArray(digit))
+		}
+
+		inputs = append(inputs, d)
+	}
+
+	origMapping := map[int]string{
+		0: "abcefg",
+		1: "cf",
+		2: "acdeg",
+		3: "acdfg",
+		4: "bcdf",
+		5: "abdfg",
+		6: "abdefg",
+		7: "acf",
+		8: "abcdefg",
+		9: "abcdfg",
+	}
+
+	nKnown := 0
+	totalValue := 0
+	for i := range inputs {
+		display := inputs[i]
+		for _, o := range display.output {
+			if len(o) == 2 || len(o) == 4 || len(o) == 3 || len(o) == 7 {
+				nKnown++
+			}
+		}
+		for _, wire := range display.wires {
+			display.setUniqeMappings(wire, origMapping)
+		}
+		display.solve()
+		totalValue += display.value()
+	}
+
+	fmt.Println("Part one: ", nKnown)
+	fmt.Println("Part two: ", totalValue)
+
+}
+
+func (d *display) value() int {
+	if len(d.knownSignals) != 10 {
+		log.Println("Not solved yet")
+		return 0
+	}
+
+	digits := ""
+	for i := range d.output {
+		for v := range d.knownSignals {
+			if arrayContainsExact(d.output[i], d.knownSignals[v]) {
+				digits += strconv.Itoa(v)
+			}
+		}
+	}
+	value, _ := strconv.Atoi(digits)
+	return value
+}
+
+func (d *display) solve() {
+	for i := 0; len(d.knownSignals) < 10; i++ {
+		for _, wire := range d.wires {
+			if len(wire) == 5 {
+				if arrayContainsAll(wire, d.knownSignals[1]) {
+					// It's 3
+					d.knownSignals[3] = wire
+				} else if _, ok := d.knownSignals[6]; ok {
+					if arrayContainsAll(d.knownSignals[6], wire) {
+						// It's 5
+						d.knownSignals[5] = wire
+					} else {
+						// It's 2
+						d.knownSignals[2] = wire
+					}
+				}
+			} else if len(wire) == 6 {
+				// 6 or 9
+				if _, ok := d.knownSignals[3]; ok {
+					if arrayContainsAll(wire, d.knownSignals[3]) {
+						// It's 9
+						d.knownSignals[9] = wire
+					} else {
+						if _, ok := d.knownSignals[7]; ok {
+							if arrayContainsAll(wire, d.knownSignals[7]) {
+								// It's 0
+								d.knownSignals[0] = wire
+							} else {
+								// it's 6
+								d.knownSignals[6] = wire
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+func (d *display) setUniqeMappings(wire []string, origMapping map[int]string) {
+	if len(wire) == len(origMapping[1]) {
+		d.knownSignals[1] = wire
+	}
+	if len(wire) == len(origMapping[4]) {
+		d.knownSignals[4] = wire
+	}
+	if len(wire) == len(origMapping[7]) {
+		d.knownSignals[7] = wire
+	}
+	if len(wire) == len(origMapping[8]) {
+		d.knownSignals[8] = wire
+	}
+}
+
+type display struct {
+	wires        [][]string
+	output       [][]string
+	knownSignals map[int][]string
+}
+
+func day7() {
+	file, err := os.Open("./7/input.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	var crabs []int
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		f := strings.Split(line, ",")
+		for _, s := range f {
+			i, _ := strconv.Atoi(s)
+			crabs = append(crabs, i)
+		}
+	}
+
+	median := median(crabs...)
+
+	fuel1, fuel2 := 0, 0
+	for _, c := range crabs {
+		fuel1 += abs(c - median)
+		n := abs(c - avg(crabs...))
+		fuel2 += (n + 1) * n / 2
+	}
+	fmt.Println("Fuel spent: ", fuel1, fuel2)
+}
+
+func abs(i int) int {
+	if i < 0 {
+		return -1 * i
+	} else {
+		return i
+	}
+}
+
+func median(n ...int) int {
+	sort.Ints(n)
+	m := len(n) / 2
+	if !(len(n)%2 == 0) {
+		return n[m]
+	}
+	return (n[m-1] + n[m]) / 2
+}
+
+func avg(n ...int) int {
+	sum := sumArray(n)
+	l := len(n)
+
+	avg := sum / l
+	return avg
 }
 
 func day6() {
+
+	start := time.Now()
+
 	file, err := os.Open("./6/input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
 
-	fishPerDay := make([]int, 256)
+	fishPerDay := make([]int, 256+9)
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -37,21 +236,23 @@ func day6() {
 		}
 	}
 
+	day80 := 0
 	for i := 0; i < 256; i++ {
-		fishPerDay[7] += fishPerDay[0]
-		fishPerDay[9] = fishPerDay[0]
-		fishPerDay = append(fishPerDay[1:], 0)
+		fishPerDay[i+7] += fishPerDay[i]
+		fishPerDay[i+9] = fishPerDay[i]
 		if i == 79 {
-			log.Println("No. fish after 80  days", sumArray(fishPerDay))
+			day80 = sumArray(fishPerDay[80:])
 		}
 	}
-	log.Println("No. Fish after 256 days", sumArray(fishPerDay))
+	fmt.Println("No. Fish after 80 & 256 days", day80, sumArray(fishPerDay[256:]))
+	took := time.Now().Sub(start)
+	fmt.Println(took.Microseconds())
 }
 
 func sumArray(a []int) int {
 	s := 0
-	for _, n := range a {
-		s += n
+	for i := range a {
+		s += a[i]
 	}
 	return s
 }
