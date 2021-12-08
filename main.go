@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"sort"
 	"strconv"
@@ -23,6 +24,7 @@ func main() {
 }
 
 func day8() {
+	start := time.Now()
 	file, err := os.Open("./8/input.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -33,7 +35,7 @@ func day8() {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		d := &display{knownSignals: make(map[int][]string, 10)}
+		d := &display{knownSignals: make(map[int][]string, 10), solved: make(map[int]bool, 10)}
 
 		f := strings.Split(line, " | ")
 
@@ -48,19 +50,6 @@ func day8() {
 		inputs = append(inputs, d)
 	}
 
-	origMapping := map[int]string{
-		0: "abcefg",
-		1: "cf",
-		2: "acdeg",
-		3: "acdfg",
-		4: "bcdf",
-		5: "abdfg",
-		6: "abdefg",
-		7: "acf",
-		8: "abcdefg",
-		9: "abcdfg",
-	}
-
 	nKnown := 0
 	totalValue := 0
 	for i := range inputs {
@@ -71,7 +60,7 @@ func day8() {
 			}
 		}
 		for _, wire := range display.wires {
-			display.setUniqeMappings(wire, origMapping)
+			display.setUniqeMappings(wire)
 		}
 		display.solve()
 		totalValue += display.value()
@@ -79,6 +68,9 @@ func day8() {
 
 	fmt.Println("Part one: ", nKnown)
 	fmt.Println("Part two: ", totalValue)
+
+	diff := time.Now().Sub(start)
+	fmt.Println("Took", diff.Microseconds(), "microseconds")
 
 }
 
@@ -88,32 +80,37 @@ func (d *display) value() int {
 		return 0
 	}
 
-	digits := ""
-	for i := range d.output {
-		for v := range d.knownSignals {
-			if arrayContainsExact(d.output[i], d.knownSignals[v]) {
-				digits += strconv.Itoa(v)
+	value := 0
+	for i, o := range d.output {
+		for v, s := range d.knownSignals {
+			if arrayContainsExact(o, s) {
+				value += int(math.Pow10(3-i)) * v
 			}
 		}
 	}
-	value, _ := strconv.Atoi(digits)
 	return value
 }
 
 func (d *display) solve() {
 	for i := 0; len(d.knownSignals) < 10; i++ {
-		for _, wire := range d.wires {
+		for i, wire := range d.wires {
+			if d.solved[i] {
+				continue
+			}
 			if len(wire) == 5 {
 				if arrayContainsAll(wire, d.knownSignals[1]) {
 					// It's 3
 					d.knownSignals[3] = wire
+					d.solved[i] = true
 				} else if _, ok := d.knownSignals[6]; ok {
 					if arrayContainsAll(d.knownSignals[6], wire) {
 						// It's 5
 						d.knownSignals[5] = wire
+						d.solved[i] = true
 					} else {
 						// It's 2
 						d.knownSignals[2] = wire
+						d.solved[i] = true
 					}
 				}
 			} else if len(wire) == 6 {
@@ -122,14 +119,17 @@ func (d *display) solve() {
 					if arrayContainsAll(wire, d.knownSignals[3]) {
 						// It's 9
 						d.knownSignals[9] = wire
+						d.solved[i] = true
 					} else {
 						if _, ok := d.knownSignals[7]; ok {
 							if arrayContainsAll(wire, d.knownSignals[7]) {
 								// It's 0
 								d.knownSignals[0] = wire
+								d.solved[i] = true
 							} else {
 								// it's 6
 								d.knownSignals[6] = wire
+								d.solved[i] = true
 							}
 						}
 					}
@@ -139,17 +139,15 @@ func (d *display) solve() {
 	}
 }
 
-func (d *display) setUniqeMappings(wire []string, origMapping map[int]string) {
-	if len(wire) == len(origMapping[1]) {
+func (d *display) setUniqeMappings(wire []string) {
+	switch len(wire) {
+	case 2:
 		d.knownSignals[1] = wire
-	}
-	if len(wire) == len(origMapping[4]) {
+	case 4:
 		d.knownSignals[4] = wire
-	}
-	if len(wire) == len(origMapping[7]) {
+	case 3:
 		d.knownSignals[7] = wire
-	}
-	if len(wire) == len(origMapping[8]) {
+	case 7:
 		d.knownSignals[8] = wire
 	}
 }
@@ -158,6 +156,7 @@ type display struct {
 	wires        [][]string
 	output       [][]string
 	knownSignals map[int][]string
+	solved       map[int]bool
 }
 
 func day7() {
