@@ -31,8 +31,10 @@ func day8() {
 	}
 	defer file.Close()
 
-	var inputs []*display
 	scanner := bufio.NewScanner(file)
+
+	nKnown := 0
+	totalValue := 0
 	for scanner.Scan() {
 		line := scanner.Text()
 		d := &display{knownSignals: make(map[int][]string, 10), solved: make(map[int]bool, 10)}
@@ -40,34 +42,22 @@ func day8() {
 		f := strings.Split(line, " | ")
 
 		for _, digit := range strings.Fields(f[0]) {
-			d.wires = append(d.wires, stringToCharArray(digit))
+			da := stringToCharArray(digit)
+			d.wires = append(d.wires, da)
+			d.setUniqeMappings(da)
 		}
 
-		for _, digit := range strings.Fields(f[1]) {
-			d.output = append(d.output, stringToCharArray(digit))
-		}
-
-		inputs = append(inputs, d)
-	}
-
-	nKnown := 0
-	totalValue := 0
-	for i := range inputs {
-		display := inputs[i]
-		for _, o := range display.output {
+		for _, o := range strings.Fields(f[1]) {
+			d.output = append(d.output, stringToCharArray(o))
 			if len(o) == 2 || len(o) == 4 || len(o) == 3 || len(o) == 7 {
 				nKnown++
 			}
 		}
-		for _, wire := range display.wires {
-			display.setUniqeMappings(wire)
-		}
-		display.solve()
-		totalValue += display.value()
+		d.solve()
+		totalValue += d.value()
 	}
 
-	fmt.Println("Part one: ", nKnown)
-	fmt.Println("Part two: ", totalValue)
+	fmt.Println("Part one: ", nKnown, "Part two: ", totalValue)
 
 	diff := time.Now().Sub(start)
 	fmt.Println("Took", diff.Microseconds(), "microseconds")
@@ -134,6 +124,9 @@ func (d *display) solve() {
 						}
 					}
 				}
+			}
+			if len(d.knownSignals) == 10 {
+				return
 			}
 		}
 	}
