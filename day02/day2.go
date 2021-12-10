@@ -16,7 +16,7 @@ func Get() util.Entry {
 	return &d{}
 }
 
-func (*d) Run() {
+func (*d) Run() (int, int) {
 	file, err := os.Open("./day02/input.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -24,13 +24,13 @@ func (*d) Run() {
 	defer file.Close()
 
 	var commands [][]string
-	var depth, horizontalPosition int64 = 0, 0
+	var depth, horizontalPosition int = 0, 0
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		command := strings.Split(scanner.Text(), " ")
 		commands = append(commands, command)
 		movement := command[0]
-		amount, _ := strconv.ParseInt(command[1], 10, 64)
+		amount, _ := strconv.Atoi(command[1])
 		//log.Println("Going", movement, "amount", amount)
 		if movement == "forward" {
 			horizontalPosition = horizontalPosition + amount
@@ -44,14 +44,12 @@ func (*d) Run() {
 
 	}
 
-	log.Println("------- PART ONE ---------")
-	log.Println("Command length", len(commands))
-	log.Println("Horizontal", horizontalPosition, "Depth", depth, "Answer", horizontalPosition*depth)
+	partOne := horizontalPosition * depth
 
-	var hPos2, depth2, aim int64 = 0, 0, 0
+	var hPos2, depth2, aim int = 0, 0, 0
 	for _, c := range commands {
 		movement := c[0]
-		amount, _ := strconv.ParseInt(c[1], 10, 64)
+		amount, _ := strconv.Atoi(c[1])
 		if movement == "down" {
 			aim = aim + amount
 		}
@@ -63,7 +61,7 @@ func (*d) Run() {
 			depth2 = depth2 + (aim * amount)
 		}
 	}
-	log.Println("---- PART TWO ----")
-	log.Println("Horizontal 2", hPos2, "Depth", depth2, "Answer", hPos2*depth2)
+	partTwo := hPos2 * depth2
 
+	return partOne, partTwo
 }

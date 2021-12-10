@@ -16,13 +16,7 @@ func Get() util.Entry {
 	return &d{}
 }
 
-type board struct {
-	rows          [][]string
-	rowCounter    []int
-	columnCounter []int
-}
-
-func (*d) Run() {
+func (*d) Run() (int, int) {
 	file, err := os.Open("./day04/input.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -51,6 +45,7 @@ func (*d) Run() {
 	}
 
 	boardsWon := make([]bool, len(boards))
+	var boardScores []int
 	for _, drawing := range strings.Split(drawings, ",") {
 		for i := range boards {
 			for j := range boards[i].rows {
@@ -74,8 +69,8 @@ func (*d) Run() {
 									}
 								}
 								parseDraw, _ := strconv.Atoi(drawing)
-								log.Println("Result for board", i, ":", boardSum*parseDraw)
 								boardsWon[i] = true
+								boardScores = append(boardScores, boardSum*parseDraw)
 							}
 						}
 					}
@@ -83,4 +78,11 @@ func (*d) Run() {
 			}
 		}
 	}
+	return boardScores[0], boardScores[len(boardScores)-1]
+}
+
+type board struct {
+	rows          [][]string
+	rowCounter    []int
+	columnCounter []int
 }

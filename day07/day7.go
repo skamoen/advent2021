@@ -2,7 +2,6 @@ package day07
 
 import (
 	"bufio"
-	"fmt"
 	"github.com/skamoen/advent2021/util"
 	"log"
 	"os"
@@ -17,7 +16,7 @@ func Get() util.Entry {
 	return &d{}
 }
 
-func (*d) Run() {
+func (*d) Run() (int, int) {
 	file, err := os.Open("./day07/input.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -43,5 +42,5 @@ func (*d) Run() {
 		n := util.Abs(c - util.Avg(crabs...))
 		fuel2 += (n + 1) * n / 2
 	}
-	fmt.Println("Fuel spent: ", fuel1, fuel2)
+	return fuel1, fuel2
 }

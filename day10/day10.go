@@ -2,7 +2,6 @@ package day10
 
 import (
 	"bufio"
-	"fmt"
 	"github.com/skamoen/advent2021/util"
 	"log"
 	"os"
@@ -15,7 +14,7 @@ func Get() util.Entry {
 	return &d{}
 }
 
-func (*d) Run() {
+func (*d) Run() (int, int) {
 	file, err := os.Open("./day10/input.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -74,5 +73,5 @@ lineScan:
 		completeScores = append(completeScores, completeScore)
 	}
 
-	fmt.Println("Part one corruptScore", syntaxScore, "Autocomplete score", util.Median(completeScores...))
+	return syntaxScore, util.Median(completeScores...)
 }

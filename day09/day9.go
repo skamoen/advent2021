@@ -2,7 +2,6 @@ package day09
 
 import (
 	"bufio"
-	"fmt"
 	"github.com/skamoen/advent2021/util"
 	"log"
 	"os"
@@ -17,7 +16,7 @@ func Get() util.Entry {
 	return &d{}
 }
 
-func (*d) Run() {
+func (*d) Run() (int, int) {
 	file, err := os.Open("./day09/input.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -77,7 +76,7 @@ func (*d) Run() {
 
 	sort.Ints(sizes)
 	ints := sizes[len(sizes)-3:]
-	fmt.Println("Riskfactor", riskSum, "Basin size", ints[0]*ints[1]*ints[2])
+	return riskSum, ints[0] * ints[1] * ints[2]
 }
 
 func (b *basin) findSize(heights [][]int) int {

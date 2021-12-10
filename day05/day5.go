@@ -16,7 +16,7 @@ func Get() util.Entry {
 	return &d{}
 }
 
-func (*d) Run() {
+func (*d) Run() (int, int) {
 	file, err := os.Open("./day05/input.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -61,7 +61,7 @@ func (*d) Run() {
 		}
 	}
 
-	log.Println("Part 1 Overlapping", overlap)
+	partOne := overlap
 
 	for _, line := range diag {
 		x, y := line.start[0], line.start[1]
@@ -83,7 +83,7 @@ func (*d) Run() {
 		}
 	}
 
-	log.Println("Part 2 Overlapping", overlap)
+	return partOne, overlap
 }
 
 func makeVectorFromString(from, to string) vector {

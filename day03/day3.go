@@ -15,14 +15,14 @@ func Get() util.Entry {
 	return &d{}
 }
 
-func (*d) Run() {
+func (*d) Run() (int, int) {
 	file, err := os.Open("./day03/input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
 
-	var bits [][]string = make([][]string, 12)
+	var bits = make([][]string, 12)
 	var part2Bits [][]string
 
 	scanner := bufio.NewScanner(file)
@@ -60,16 +60,10 @@ func (*d) Run() {
 		}
 	}
 
-	gammaValue, err := strconv.ParseInt(gamma, 2, 64)
-	if err != nil {
-		log.Fatal(err)
-	}
-	epsilonValue, err := strconv.ParseInt(epsilon, 2, 64)
-	if err != nil {
-		log.Fatal(err)
-	}
+	gammaValue, _ := strconv.ParseInt(gamma, 2, 64)
+	epsilonValue, _ := strconv.ParseInt(epsilon, 2, 64)
 
-	log.Println("Part one result", gammaValue*epsilonValue)
+	partOne := gammaValue * epsilonValue
 
 	oxygen := filterOxygen(part2Bits, 0)
 	co2 := filterCo2(part2Bits, 0)
@@ -86,7 +80,8 @@ func (*d) Run() {
 	oxyValue, _ := strconv.ParseInt(oxyString, 2, 64)
 	co2Value, _ := strconv.ParseInt(co2String, 2, 64)
 
-	log.Println("result", oxyValue*co2Value)
+	partTwo := oxyValue * co2Value
+	return int(partOne), int(partTwo)
 
 }
 

@@ -2,13 +2,11 @@ package day08
 
 import (
 	"bufio"
-	"fmt"
 	"github.com/skamoen/advent2021/util"
 	"log"
 	"math"
 	"os"
 	"strings"
-	"time"
 )
 
 type d struct {
@@ -18,8 +16,7 @@ func Get() util.Entry {
 	return &d{}
 }
 
-func (*d) Run() {
-	start := time.Now()
+func (*d) Run() (int, int) {
 	file, err := os.Open("./day08/input.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -52,11 +49,7 @@ func (*d) Run() {
 		totalValue += d.value()
 	}
 
-	fmt.Println("Part one: ", nKnown, "Part two: ", totalValue)
-
-	diff := time.Now().Sub(start)
-	fmt.Println("Took", diff.Microseconds(), "microseconds")
-
+	return nKnown, totalValue
 }
 
 func (d *display) value() int {

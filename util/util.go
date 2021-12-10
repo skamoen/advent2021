@@ -3,7 +3,7 @@ package util
 import "sort"
 
 type Entry interface {
-	Run()
+	Run() (int, int)
 }
 
 type d struct {
@@ -13,8 +13,8 @@ func Nop() Entry {
 	return &d{}
 }
 
-func (*d) Run() {
-	return
+func (*d) Run() (int, int) {
+	return 0, 0
 }
 
 func MostCommon(bits [][]string, pos int) string {

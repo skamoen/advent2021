@@ -30,19 +30,24 @@ func main() {
 		day10.Get(),
 	}
 
+	fmt.Println("--- TODAY ---")
 	start := time.Now()
 	if len(days) <= start.Day() {
 		fmt.Println("Day", start.Day(), "not implemented yet")
 		return
 	}
-	days[start.Day()].Run()
+	part1, part2 := days[start.Day()].Run()
+	fmt.Println("Day", start.Day(), "\tPart 1", part1, "\tPart 2", part2)
 	diff := time.Now().Sub(start)
 	fmt.Println("Took", diff.Microseconds(), "microseconds")
 
 	if true {
+		fmt.Println("\n--- BENCHMARK ---")
+
 		startTotal := time.Now()
-		for _, f := range days[1:] {
-			f.Run()
+		for i, f := range days[1:] {
+			part1, part2 := f.Run()
+			fmt.Println("Day", i+1, "\tPart 1", part1, "\tPart 2", part2)
 		}
 		diffTotal := time.Now().Sub(startTotal)
 		fmt.Println("Took Total", diffTotal.Milliseconds(), "milliseconds")

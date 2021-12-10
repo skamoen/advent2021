@@ -2,13 +2,11 @@ package day06
 
 import (
 	"bufio"
-	"fmt"
 	"github.com/skamoen/advent2021/util"
 	"log"
 	"os"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type d struct {
@@ -18,10 +16,7 @@ func Get() util.Entry {
 	return &d{}
 }
 
-func (*d) Run() {
-
-	start := time.Now()
-
+func (*d) Run() (int, int) {
 	file, err := os.Open("./day06/input.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -48,7 +43,5 @@ func (*d) Run() {
 			day80 = util.SumArrayInts(fishPerDay[80:])
 		}
 	}
-	fmt.Println("No. Fish after 80 & 256 days", day80, util.SumArrayInts(fishPerDay[256:]))
-	took := time.Now().Sub(start)
-	fmt.Println(took.Microseconds())
+	return day80, util.SumArrayInts(fishPerDay[256:])
 }

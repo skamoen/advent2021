@@ -2,7 +2,6 @@ package day01
 
 import (
 	"bufio"
-	"fmt"
 	"github.com/skamoen/advent2021/util"
 	"log"
 	"os"
@@ -16,7 +15,7 @@ func Get() util.Entry {
 	return &d{}
 }
 
-func (*d) Run() {
+func (*d) Run() (int, int) {
 	file, err := os.Open("./day01/input.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -24,17 +23,14 @@ func (*d) Run() {
 	defer file.Close()
 
 	deeper := 0
-	var measurements []int64
+	var measurements []int
 
 	scanner := bufio.NewScanner(file)
 	scanner.Scan()
-	prevReading, err := strconv.ParseInt(scanner.Text(), 10, 64)
+	prevReading, _ := strconv.Atoi(scanner.Text())
 	measurements = append(measurements, prevReading)
 	for scanner.Scan() {
-		reading, err := strconv.ParseInt(scanner.Text(), 10, 64)
-		if err != nil {
-			log.Fatal(err)
-		}
+		reading, _ := strconv.Atoi(scanner.Text())
 		if reading > prevReading {
 			deeper++
 		}
@@ -43,15 +39,11 @@ func (*d) Run() {
 		prevReading = reading
 	}
 
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-
 	deeperWindows := 0
-	var prevSum int64
+	var prevSum int
 	for i := 0; i <= len(measurements)-3; i++ {
 		currentWindow := measurements[i : i+3]
-		var currentSum int64 = 0
+		currentSum := 0
 		for _, m := range currentWindow {
 			currentSum = currentSum + m
 		}
@@ -63,6 +55,5 @@ func (*d) Run() {
 		prevSum = currentSum
 	}
 
-	fmt.Println("Readings deeper: ", deeper)
-	fmt.Println("Readings deeper windows: ", deeperWindows)
+	return deeper, deeperWindows
 }
