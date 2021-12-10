@@ -12,6 +12,8 @@ import (
 )
 
 func main() {
+	start := time.Now()
+
 	//day1()
 	//day2()
 	//day3()
@@ -20,11 +22,61 @@ func main() {
 	//day6()
 	//day7()
 	//day8()
-	day9()
+	//day9()
+	day10()
+
+	diff := time.Now().Sub(start)
+	fmt.Println("Took", diff.Microseconds(), "microseconds")
+}
+
+func day10() {
+	file, err := os.Open("./10/input.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	expected := map[string]string{
+		"(": ")",
+		"<": ">",
+		"[": "]",
+		"{": "}",
+	}
+
+	score := map[string]int{
+		")": 3,
+		">": 25137,
+		"]": 57,
+		"}": 1197,
+	}
+
+	opening := []string{"(", "{", "[", "<"}
+	syntaxScore := 0
+
+lineScan:
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		var record []string
+		for i := range line {
+			currentCharacter := string(line[i])
+			if arrayContains(opening, currentCharacter) {
+				record = append([]string{currentCharacter}, record...)
+			} else if expected[record[0]] != currentCharacter {
+				syntaxScore += score[currentCharacter]
+				continue lineScan
+			} else {
+				record = record[1:]
+			}
+		}
+
+	}
+	fmt.Println("Part one score", syntaxScore)
 }
 
 func day9() {
-	start := time.Now()
 	file, err := os.Open("./9/input.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -85,10 +137,6 @@ func day9() {
 	sort.Ints(sizes)
 	ints := sizes[len(sizes)-3:]
 	fmt.Println("Riskfactor", riskSum, "Basin size", ints[0]*ints[1]*ints[2])
-
-	diff := time.Now().Sub(start)
-	fmt.Println("Took", diff.Microseconds(), "microseconds")
-
 }
 
 func (b *basin) findSize(heights [][]int) int {
