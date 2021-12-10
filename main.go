@@ -45,15 +45,23 @@ func day10() {
 		"{": "}",
 	}
 
-	score := map[string]int{
+	corruptScore := map[string]int{
 		")": 3,
 		">": 25137,
 		"]": 57,
 		"}": 1197,
 	}
 
+	completeScoreMap := map[string]int{
+		")": 1,
+		"]": 2,
+		"}": 3,
+		">": 4,
+	}
+
 	opening := []string{"(", "{", "[", "<"}
 	syntaxScore := 0
+	var completeScores []int
 
 lineScan:
 	for scanner.Scan() {
@@ -65,15 +73,22 @@ lineScan:
 			if arrayContains(opening, currentCharacter) {
 				record = append([]string{currentCharacter}, record...)
 			} else if expected[record[0]] != currentCharacter {
-				syntaxScore += score[currentCharacter]
+				syntaxScore += corruptScore[currentCharacter]
 				continue lineScan
 			} else {
 				record = record[1:]
 			}
 		}
 
+		completeScore := 0
+		for _, r := range record {
+			completeScore = completeScore * 5
+			completeScore += completeScoreMap[expected[r]]
+		}
+		completeScores = append(completeScores, completeScore)
 	}
-	fmt.Println("Part one score", syntaxScore)
+
+	fmt.Println("Part one corruptScore", syntaxScore, "Autocomplete score", median(completeScores...))
 }
 
 func day9() {
