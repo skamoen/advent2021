@@ -1,38 +1,62 @@
-package main
+package day08
 
 import (
+	"bufio"
+	"fmt"
+	"github.com/skamoen/advent2021/util"
 	"log"
 	"math"
+	"os"
+	"strings"
+	"time"
 )
 
-func arrayContainsAll(a []string, b []string) bool {
-	for _, s := range b {
-		if !arrayContains(a, s) {
-			return false
+type d struct {
+}
+
+func Get() util.Entry {
+	return &d{}
+}
+
+func (*d) Run() {
+	start := time.Now()
+	file, err := os.Open("./day08/input.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	nKnown := 0
+	totalValue := 0
+	for scanner.Scan() {
+		line := scanner.Text()
+		d := &display{knownSignals: make(map[int][]string, 10), solved: make(map[int]bool, 10)}
+
+		f := strings.Split(line, " | ")
+
+		for _, digit := range strings.Fields(f[0]) {
+			da := util.StringToCharArray(digit)
+			d.wires = append(d.wires, da)
+			d.setUniqeMappings(da)
 		}
-	}
-	return true
-}
 
-func arrayContainsExact(a []string, b []string) bool {
-	return len(a) == len(b) && arrayContainsAll(a, b)
-}
-
-func stringToCharArray(s string) []string {
-	a := make([]string, len(s))
-	for i := range s {
-		a[i] = string(s[i])
-	}
-	return a
-}
-
-func arrayContains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
-			return true
+		for _, o := range strings.Fields(f[1]) {
+			d.output = append(d.output, util.StringToCharArray(o))
+			if len(o) == 2 || len(o) == 4 || len(o) == 3 || len(o) == 7 {
+				nKnown++
+			}
 		}
+		d.solve()
+		totalValue += d.value()
 	}
-	return false
+
+	fmt.Println("Part one: ", nKnown, "Part two: ", totalValue)
+
+	diff := time.Now().Sub(start)
+	fmt.Println("Took", diff.Microseconds(), "microseconds")
+
 }
 
 func (d *display) value() int {
@@ -44,7 +68,7 @@ func (d *display) value() int {
 	value := 0
 	for i, o := range d.output {
 		for v, s := range d.knownSignals {
-			if arrayContainsExact(o, s) {
+			if util.ArrayContainsExact(o, s) {
 				value += int(math.Pow10(3-i)) * v
 			}
 		}
@@ -59,12 +83,12 @@ func (d *display) solve() {
 				continue
 			}
 			if len(wire) == 5 {
-				if arrayContainsAll(wire, d.knownSignals[1]) {
+				if util.ArrayContainsAll(wire, d.knownSignals[1]) {
 					// It's 3
 					d.knownSignals[3] = wire
 					d.solved[i] = true
 				} else if _, ok := d.knownSignals[6]; ok {
-					if arrayContainsAll(d.knownSignals[6], wire) {
+					if util.ArrayContainsAll(d.knownSignals[6], wire) {
 						// It's 5
 						d.knownSignals[5] = wire
 						d.solved[i] = true
@@ -77,13 +101,13 @@ func (d *display) solve() {
 			} else if len(wire) == 6 {
 				// 6 or 9
 				if _, ok := d.knownSignals[3]; ok {
-					if arrayContainsAll(wire, d.knownSignals[3]) {
+					if util.ArrayContainsAll(wire, d.knownSignals[3]) {
 						// It's 9
 						d.knownSignals[9] = wire
 						d.solved[i] = true
 					} else {
 						if _, ok := d.knownSignals[7]; ok {
-							if arrayContainsAll(wire, d.knownSignals[7]) {
+							if util.ArrayContainsAll(wire, d.knownSignals[7]) {
 								// It's 0
 								d.knownSignals[0] = wire
 								d.solved[i] = true
