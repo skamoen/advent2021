@@ -1,6 +1,9 @@
 package util
 
-import "sort"
+import (
+	"fmt"
+	"sort"
+)
 
 type Entry interface {
 	Run() (int, int)
@@ -15,6 +18,16 @@ func Nop() Entry {
 
 func (*d) Run() (int, int) {
 	return 0, 0
+}
+
+func PrintGrid(g [][]int) {
+	for i := range g {
+		for j := range g[i] {
+			fmt.Print(g[i][j], " ")
+		}
+		fmt.Print("\n")
+	}
+
 }
 
 func MostCommon(bits [][]string, pos int) string {

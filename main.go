@@ -12,6 +12,7 @@ import (
 	"github.com/skamoen/advent2021/day08"
 	"github.com/skamoen/advent2021/day09"
 	"github.com/skamoen/advent2021/day10"
+	"github.com/skamoen/advent2021/day11"
 	"github.com/skamoen/advent2021/util"
 	"time"
 )
@@ -28,20 +29,22 @@ func main() {
 		day08.Get(),
 		day09.Get(),
 		day10.Get(),
+		day11.Get(),
 	}
 
 	fmt.Println("--- TODAY ---")
 	start := time.Now()
-	if len(days) <= start.Day() {
-		fmt.Println("Day", start.Day(), "not implemented yet")
+	today := start.Day()
+	if len(days) <= today {
+		fmt.Println("Day", today, "not implemented yet")
 		return
 	}
-	part1, part2 := days[start.Day()].Run()
-	fmt.Println("Day", start.Day(), "\tPart 1", part1, "\tPart 2", part2)
+	part1, part2 := days[today].Run()
+	fmt.Println("Day", today, "\tPart 1", part1, "\tPart 2", part2)
 	diff := time.Now().Sub(start)
 	fmt.Println("Took", diff.Microseconds(), "microseconds")
 
-	if true {
+	if false {
 		fmt.Println("\n--- BENCHMARK ---")
 
 		startTotal := time.Now()
