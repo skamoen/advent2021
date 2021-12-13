@@ -14,6 +14,7 @@ import (
 	"github.com/skamoen/advent2021/day10"
 	"github.com/skamoen/advent2021/day11"
 	"github.com/skamoen/advent2021/day12"
+	"github.com/skamoen/advent2021/day13"
 	"github.com/skamoen/advent2021/util"
 	"time"
 )
@@ -32,6 +33,7 @@ func main() {
 		day10.Get(),
 		day11.Get(),
 		day12.Get(),
+		day13.Get(),
 	}
 
 	fmt.Println("--- TODAY ---")
@@ -44,7 +46,7 @@ func main() {
 	part1, part2 := days[today].Run()
 	fmt.Println("Day", today, "\tPart 1", part1, "\tPart 2", part2)
 	diff := time.Now().Sub(start)
-	fmt.Println("Took", diff.Microseconds(), "microseconds")
+	fmt.Println("Took", diff.String())
 
 	if false {
 		fmt.Println("\n--- BENCHMARK ---")
