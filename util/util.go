@@ -125,8 +125,8 @@ func StringToCharArray(s string) []string {
 }
 
 func ArrayContains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
+	for i, _ := range s {
+		if s[i] == str {
 			return true
 		}
 	}

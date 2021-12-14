@@ -60,3 +60,23 @@ func main() {
 		fmt.Println("Took Total", diffTotal.Milliseconds(), "milliseconds")
 	}
 }
+
+func benchmarkDay(days []util.Entry, day int, n int) {
+	var runtimes []time.Duration
+	var results []int
+	currentDay := days[day]
+	for i := 0; i < n; i++ {
+		start := time.Now()
+		one, two := currentDay.Run()
+		runtimes = append(runtimes, time.Since(start))
+		results = append(results, []int{one, two}...)
+	}
+
+	var totalRuntime time.Duration = 0
+	for i := range runtimes {
+		totalRuntime += runtimes[i]
+	}
+
+	fmt.Println("Average", totalRuntime.Milliseconds()/int64(n))
+
+}

@@ -2,7 +2,6 @@ package day13
 
 import (
 	"bufio"
-	"fmt"
 	"github.com/skamoen/advent2021/util"
 	"log"
 	"os"
@@ -67,18 +66,13 @@ func (*d) Run() (int, int) {
 		nVisible = 0
 		if f.direction == "y" {
 			// fold up
-			var newDots [][]bool = make([][]bool, len(dots))
-			for i := range newDots {
-				newDots[i] = make([]bool, f.axis)
-			}
-
 			for c := range dots {
 				for r := range dots[c] {
 					rBelow := f.axis + 1 + r
 					rOrig := f.axis - 1 - r
 					belowFold := dots[c][rBelow]
 					foldOn := dots[c][rOrig]
-					newDots[c][rOrig] = belowFold || foldOn
+					dots[c][rOrig] = belowFold || foldOn
 
 					if belowFold || foldOn {
 						nVisible++
@@ -88,45 +82,41 @@ func (*d) Run() (int, int) {
 					}
 				}
 			}
-			dots = newDots
-		} else if f.direction == "x" {
-			var newDots = make([][]bool, f.axis)
-			for i := range newDots {
-				newDots[i] = make([]bool, len(dots[i]))
+			for j := range dots {
+				dots[j] = dots[j][:f.axis]
 			}
-
+		} else if f.direction == "x" {
 			for c := range dots[:f.axis] {
 				for r := range dots[c] {
 					cRight := f.axis + 1 + c
 					cOrig := f.axis - 1 - c
 					rightFold := dots[cRight][r]
 					foldOn := dots[cOrig][r]
-					newDots[cOrig][r] = rightFold || foldOn
-
+					dots[cOrig][r] = rightFold || foldOn
 					if rightFold || foldOn {
 						nVisible++
 					}
 				}
 			}
-			dots = newDots
+			dots = dots[:f.axis]
 		}
 		if i == 0 {
 			partOne = nVisible
 		}
 	}
 
-	for j := 0; j < len(dots[0]); j++ {
-		for i := 0; i < len(dots); i++ {
-			if dots[i][j] {
-				fmt.Print("X ")
-			} else {
-				fmt.Print("  ")
-			}
-		}
-		fmt.Println()
-	}
+	//for j := 0; j < len(dots[0]); j++ {
+	//	for i := 0; i < len(dots); i++ {
+	//		if dots[i][j] {
+	//			fmt.Print("X ")
+	//		} else {
+	//			fmt.Print("  ")
+	//		}
+	//	}
+	//	fmt.Println()
+	//}
 
-	return partOne, 0
+	return partOne, len(dots)
 }
 
 type fold struct {

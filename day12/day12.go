@@ -43,22 +43,26 @@ func (*d) Run() (int, int) {
 	}
 
 	q := p.findNext(caves)
-	var done []path
+	var partOne int
+	var partTwo int
 
 	for i := 0; len(q) > 0; i++ {
 		currentPath := q[0]
 		q = q[1:]
 		if !currentPath.done {
 			nextPaths := currentPath.findNext(caves)
-			q = append(q, nextPaths...)
+			q = append(nextPaths, q...)
 		} else {
 			if currentPath.path[len(currentPath.path)-1] == "end" {
-				done = append(done, currentPath)
+				if !currentPath.small {
+					partOne++
+				}
+				partTwo++
 			}
 		}
 	}
 
-	return len(done), 0
+	return partOne, partTwo
 }
 
 type path struct {
@@ -67,9 +71,9 @@ type path struct {
 	small bool
 }
 
-func (p *path) findNext(caves map[string]*node) []path {
+func (p *path) findNext(caves map[string]*node) []*path {
 	currentNode := caves[p.path[len(p.path)-1]]
-	var newPaths []path
+	var newPaths []*path
 	if p.done {
 		return nil
 	}
@@ -78,23 +82,28 @@ func (p *path) findNext(caves map[string]*node) []path {
 		if connection.name == "start" {
 			continue
 		}
-		if connection.isSmall && util.ArrayContains(p.path, connection.name) {
-			if p.small {
+		if p.small {
+			if connection.isSmall && util.ArrayContains(p.path, connection.name) {
 				continue
-			} else {
-				p.small = true
 			}
 		}
 
-		pCopy := path{path: make([]string, len(p.path)), done: false, small: p.small}
+		pCopy := &path{path: make([]string, len(p.path)), done: false, small: false}
+		if p.small {
+			pCopy.small = true
+		}
 		copy(pCopy.path, p.path)
 		pCopy.path = append(pCopy.path, connection.name)
+		if connection.isSmall && util.ArrayContains(p.path, connection.name) {
+			pCopy.small = true
+		}
+
 		if connection.name == "end" {
 			pCopy.done = true
 		}
 		newPaths = append(newPaths, pCopy)
 	}
-	if newPaths == nil || len(newPaths) == 1 {
+	if newPaths == nil {
 		p.done = true
 	}
 	return newPaths
