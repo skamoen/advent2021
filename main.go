@@ -16,6 +16,7 @@ import (
 	"github.com/skamoen/advent2021/day12"
 	"github.com/skamoen/advent2021/day13"
 	"github.com/skamoen/advent2021/day14"
+	"github.com/skamoen/advent2021/day15"
 	"github.com/skamoen/advent2021/util"
 	"time"
 )
@@ -36,6 +37,7 @@ func main() {
 		day12.Get(),
 		day13.Get(),
 		day14.Get(),
+		day15.Get(),
 	}
 
 	fmt.Println("--- TODAY ---")
