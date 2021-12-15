@@ -17,7 +17,14 @@ func Get() util.Entry {
 	return &d{}
 }
 
-var cave [][]*node
+var origCave [][]*node
+
+var nodes map[int]*node
+
+var origGridSize int
+var gridSize int
+
+var nodesArray []*node
 
 func (*d) Run() (int, int) {
 	//file, err := os.Open("./day15/example.txt")
@@ -27,148 +34,133 @@ func (*d) Run() (int, int) {
 	}
 	defer file.Close()
 
-	var partOneNodes []*node
-	var partTwoNodes []*node
-
 	column := 0
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
 
 		currentLine := make([]*node, len(line))
-		for i := range line {
-			c, _ := strconv.Atoi(string(line[i]))
-			newNode := &node{
-				cost:     c,
-				visited:  false,
-				distance: math.MaxInt,
-				column:   column,
-				row:      i,
+		for row := range line {
+			if nodes == nil {
+				nodes = make(map[int]*node, len(line))
+				origGridSize = len(line)
+				gridSize = len(line)
 			}
-			currentLine[i] = newNode
-			partOneNodes = append(partOneNodes, newNode)
+			c, _ := strconv.Atoi(string(line[row]))
+			newNode := &node{
+				cost:    c,
+				visited: false,
+				risk:    math.MaxInt,
+				column:  column,
+				row:     row,
+			}
+			currentLine[row] = newNode
+			nodesArray = append(nodesArray, newNode)
+			nodes[(column+1)*gridSize+row] = newNode
 		}
-		cave = append(cave, currentLine)
+		origCave = append(origCave, currentLine)
 		column++
 	}
 
-	start := cave[0][0]
-	start.distance = 0
+	start := origCave[0][0]
+	start.risk = 0
 
-	end := partOneNodes[len(partOneNodes)-1]
+	end := nodesArray[len(nodesArray)-1]
 
-	start.visitNeighbors(cave)
+	start.visitNeighbors()
 
 	for i := 0; !end.visited; i++ {
-		nextNode := nextNode(partOneNodes)
-		nextNode.visitNeighbors(cave)
+		nextNode, s := nextNode(nodesArray)
+		nextNode.visitNeighbors()
+		nodesArray = append(nodesArray[:s], nodesArray[s+1:]...)
 	}
 
-	caveTwo := make([][]*node, len(cave)*5)
-	for i := range caveTwo {
-		caveTwo[i] = make([]*node, len(cave)*5)
-	}
-	mX := len(cave)
-	mY := len(cave[0])
+	partOne := end.risk
 
-	for i := 0; i < len(caveTwo); i++ {
-		for j := 0; j < len(caveTwo); j++ {
-			newCost := (cave[i%mY][j%mX].cost+i/mY+j/mX-1)%9 + 1
-			newNode := &node{
-				cost:     newCost,
-				distance: math.MaxInt,
-				column:   i,
-				row:      j,
-			}
-			caveTwo[i][j] = newNode
-			partTwoNodes = append(partTwoNodes, newNode)
-		}
+	gridSize = gridSize * 5
+	nodes2 := make(map[int]*node, gridSize)
+	nodesArray = make([]*node, 0)
+	for _, v := range nodes {
+		nodes2[(v.column+1)*gridSize+v.row] = v
+		nodesArray = append(nodesArray, v)
+	}
+	nodes = nodes2
+
+	for i := range nodesArray {
+		nodesArray[i].visited = false
+		nodesArray[i].risk = math.MaxInt
 	}
 
-	startTwo := caveTwo[0][0]
-	startTwo.distance = 0
+	startTwo := getNode(0, 0)
+	startTwo.risk = 0
 
-	endTwo := partTwoNodes[len(partTwoNodes)-1]
+	endTwo := getNode(gridSize-1, gridSize-1)
 
-	startTwo.visitNeighbors(caveTwo)
+	startTwo.visitNeighbors()
 
 	for i := 0; !endTwo.visited; i++ {
-		nextNode := nextNode(partTwoNodes)
-		nextNode.visitNeighbors(caveTwo)
+		nextNode, s := nextNode(nodesArray)
+		nextNode.visitNeighbors()
+		nodesArray = append(nodesArray[:s], nodesArray[s+1:]...)
 	}
 
-	return end.distance, endTwo.distance
+	return partOne, endTwo.risk
 }
 
-func nextNode(n []*node) *node {
-	next := &node{distance: math.MaxInt}
+func nextNode(n []*node) (*node, int) {
+	next := &node{risk: math.MaxInt, cost: -1}
+	selected := -1
 	for i := range n {
-		if n[i].distance < next.distance && !n[i].visited {
+		if !n[i].visited && n[i].risk < next.risk {
 			next = n[i]
+			selected = i
 		}
 	}
-	return next
+	return next, selected
 }
 
-func (n *node) visitNeighbors(grid [][]*node) {
-	c := n.column
-	r := n.row
-	// up
-	next := getNode(c, r-1, grid)
-	if next != nil && !next.visited {
-		d := n.distance + next.cost
-		if d < next.distance {
-			next.distance = d
+func (n *node) visitNeighbors() {
+	var neighbours = [][]int{{0, -1}, {1, 0}, {0, 1}, {-1, 0}}
+
+	for _, direction := range neighbours {
+		next := getNode(n.column+direction[0], n.row+direction[1])
+		if next != nil && !next.visited {
+			d := n.risk + next.cost
+			if d < next.risk {
+				next.risk = d
+			}
 		}
 	}
-
-	// right
-	next = getNode(c+1, r, grid)
-	if next != nil && !next.visited {
-
-		d := n.distance + next.cost
-		if d < next.distance {
-			next.distance = d
-		}
-	}
-
-	//down
-	next = getNode(c, r+1, grid)
-	if next != nil && !next.visited {
-		d := n.distance + next.cost
-		if d < next.distance {
-			next.distance = d
-		}
-	}
-
-	//left
-	next = getNode(c-1, r, grid)
-	if next != nil && !next.visited {
-		d := n.distance + next.cost
-		if d < next.distance {
-			next.distance = d
-		}
-	}
-
 	n.visited = true
 }
 
-func getNode(c, r int, grid [][]*node) (n *node) {
-	defer func() {
-		if r := recover(); r != nil {
-			n = nil
+func getNode(column, row int) (n *node) {
+	if column < 0 || row < 0 || column > gridSize-1 || row > gridSize-1 {
+		return nil
+	}
+
+	n, ok := nodes[(column+1)*gridSize+row]
+	if !ok {
+		newCost := (getNode(column%origGridSize, row%origGridSize).cost+column/origGridSize+row/origGridSize-1)%9 + 1
+		n = &node{
+			cost:   newCost,
+			risk:   math.MaxInt,
+			column: column,
+			row:    row,
 		}
-	}()
-	n = grid[c][r]
+		nodes[(column+1)*gridSize+row] = n
+		nodesArray = append(nodesArray, n)
+		return
+	}
 	return
 }
 
 type node struct {
-	cost     int
-	visited  bool
-	distance int
-	column   int
-	row      int
+	cost    int
+	visited bool
+	risk    int
+	column  int
+	row     int
 }
 
 func print(n [][]*node) {
