@@ -27,7 +27,8 @@ func (*d) Run() (int, int) {
 	}
 	defer file.Close()
 
-	var unvisited []*node
+	var partOneNodes []*node
+	var partTwoNodes []*node
 
 	column := 0
 	scanner := bufio.NewScanner(file)
@@ -45,7 +46,7 @@ func (*d) Run() (int, int) {
 				row:      i,
 			}
 			currentLine[i] = newNode
-			unvisited = append(unvisited, newNode)
+			partOneNodes = append(partOneNodes, newNode)
 		}
 		cave = append(cave, currentLine)
 		column++
@@ -54,19 +55,49 @@ func (*d) Run() (int, int) {
 	start := cave[0][0]
 	start.distance = 0
 
-	end := unvisited[len(unvisited)-1]
+	end := partOneNodes[len(partOneNodes)-1]
 
-	start.visitNeighbors()
+	start.visitNeighbors(cave)
 
 	for i := 0; !end.visited; i++ {
-		nextNode := nextNode(unvisited)
-		if nextNode.column == len(unvisited)-1 && nextNode.row == len(unvisited)-1 {
-			fmt.Println(i)
-		}
-		nextNode.visitNeighbors()
+		nextNode := nextNode(partOneNodes)
+		nextNode.visitNeighbors(cave)
 	}
-	//print(cave)
-	return end.distance, 0
+
+	caveTwo := make([][]*node, len(cave)*5)
+	for i := range caveTwo {
+		caveTwo[i] = make([]*node, len(cave)*5)
+	}
+	mX := len(cave)
+	mY := len(cave[0])
+
+	for i := 0; i < len(caveTwo); i++ {
+		for j := 0; j < len(caveTwo); j++ {
+			newCost := (cave[i%mY][j%mX].cost+i/mY+j/mX-1)%9 + 1
+			newNode := &node{
+				cost:     newCost,
+				distance: math.MaxInt,
+				column:   i,
+				row:      j,
+			}
+			caveTwo[i][j] = newNode
+			partTwoNodes = append(partTwoNodes, newNode)
+		}
+	}
+
+	startTwo := caveTwo[0][0]
+	startTwo.distance = 0
+
+	endTwo := partTwoNodes[len(partTwoNodes)-1]
+
+	startTwo.visitNeighbors(caveTwo)
+
+	for i := 0; !endTwo.visited; i++ {
+		nextNode := nextNode(partTwoNodes)
+		nextNode.visitNeighbors(caveTwo)
+	}
+
+	return end.distance, endTwo.distance
 }
 
 func nextNode(n []*node) *node {
@@ -79,11 +110,11 @@ func nextNode(n []*node) *node {
 	return next
 }
 
-func (n *node) visitNeighbors() {
+func (n *node) visitNeighbors(grid [][]*node) {
 	c := n.column
 	r := n.row
 	// up
-	next := getNode(c, r-1)
+	next := getNode(c, r-1, grid)
 	if next != nil && !next.visited {
 		d := n.distance + next.cost
 		if d < next.distance {
@@ -92,7 +123,7 @@ func (n *node) visitNeighbors() {
 	}
 
 	// right
-	next = getNode(c+1, r)
+	next = getNode(c+1, r, grid)
 	if next != nil && !next.visited {
 
 		d := n.distance + next.cost
@@ -102,7 +133,16 @@ func (n *node) visitNeighbors() {
 	}
 
 	//down
-	next = getNode(c, r+1)
+	next = getNode(c, r+1, grid)
+	if next != nil && !next.visited {
+		d := n.distance + next.cost
+		if d < next.distance {
+			next.distance = d
+		}
+	}
+
+	//left
+	next = getNode(c-1, r, grid)
 	if next != nil && !next.visited {
 		d := n.distance + next.cost
 		if d < next.distance {
@@ -113,13 +153,13 @@ func (n *node) visitNeighbors() {
 	n.visited = true
 }
 
-func getNode(c, r int) (n *node) {
+func getNode(c, r int, grid [][]*node) (n *node) {
 	defer func() {
 		if r := recover(); r != nil {
 			n = nil
 		}
 	}()
-	n = cave[c][r]
+	n = grid[c][r]
 	return
 }
 
@@ -134,10 +174,13 @@ type node struct {
 func print(n [][]*node) {
 	for j := 0; j < len(n[0]); j++ {
 		for i := 0; i < len(n); i++ {
-			if n[i][j].distance < 99 {
-				fmt.Print(n[i][j].distance, "\t")
+			if n[i][j].cost < 99 {
+				fmt.Print(n[i][j].cost, "")
 			} else {
-				fmt.Print("X\t")
+				fmt.Print("X ")
+			}
+			if n[i][j].cost < 10 {
+				fmt.Print(" ")
 			}
 		}
 		fmt.Println()
