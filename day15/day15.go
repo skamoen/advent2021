@@ -17,8 +17,6 @@ func Get() util.Entry {
 	return &d{}
 }
 
-var origCave [][]*node
-
 var nodes map[int]*node
 
 var origGridSize int
@@ -58,11 +56,10 @@ func (*d) Run() (int, int) {
 			nodesArray = append(nodesArray, newNode)
 			nodes[(column+1)*gridSize+row] = newNode
 		}
-		origCave = append(origCave, currentLine)
 		column++
 	}
 
-	start := origCave[0][0]
+	start := getNode(0, 0)
 	start.risk = 0
 
 	end := nodesArray[len(nodesArray)-1]
