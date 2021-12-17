@@ -2,6 +2,7 @@ package day15
 
 import (
 	"bufio"
+	"container/heap"
 	"fmt"
 	"github.com/skamoen/advent2021/util"
 	"log"
@@ -17,16 +18,17 @@ func Get() util.Entry {
 	return &d{}
 }
 
-var nodes map[int]*node
+var nodes map[int]*Item
 
 var origGridSize int
 var gridSize int
 
-var nodesArray []*node
 var inputFile = "./day15/input.txt"
 
+//var inputFile = "./day15/example.txt"
+var pq PriorityQueue
+
 func (*d) Run() (int, int) {
-	//file, err := os.Open("./day15/example.txt")
 	file, err := os.Open(inputFile)
 	if err != nil {
 		log.Fatal(err)
@@ -38,116 +40,110 @@ func (*d) Run() (int, int) {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		currentLine := make([]*node, len(line))
 		for row := range line {
 			if nodes == nil {
-				nodes = make(map[int]*node, len(line))
+				nodes = make(map[int]*Item, len(line))
 				origGridSize = len(line)
 				gridSize = len(line)
+				pq = make(PriorityQueue, 0, len(line)*len(line))
+				heap.Init(&pq)
 			}
 			c, _ := strconv.Atoi(string(line[row]))
-			newNode := &node{
-				cost:    c,
-				visited: false,
-				risk:    math.MaxInt,
-				column:  column,
-				row:     row,
+			newNode := &Item{
+				value:    c,
+				priority: math.MaxInt,
+				index:    0,
+				visited:  false,
+				column:   column,
+				row:      row,
 			}
-			currentLine[row] = newNode
-			nodesArray = append(nodesArray, newNode)
 			nodes[(column+1)*gridSize+row] = newNode
+			heap.Push(&pq, newNode)
 		}
 		column++
 	}
 
 	start := getNode(0, 0)
-	start.risk = 0
+	pq.update(start, start.value, 0)
+	// Take start off the PQ
+	heap.Pop(&pq)
 
-	end := nodesArray[len(nodesArray)-1]
+	end := getNode(gridSize-1, gridSize-1)
 
 	start.visitNeighbors()
 
 	for i := 0; !end.visited; i++ {
-		nextNode, s := nextNode(nodesArray)
+		nextNode := heap.Pop(&pq).(*Item)
 		nextNode.visitNeighbors()
-		nodesArray = append(nodesArray[:s], nodesArray[s+1:]...)
 	}
 
-	partOne := end.risk
+	partOne := end.priority
 
 	gridSize = gridSize * 5
-	nodes2 := make(map[int]*node, gridSize)
-	nodesArray = make([]*node, 0)
+	pq = make(PriorityQueue, 0, gridSize*gridSize)
+	heap.Init(&pq)
+
+	nodes2 := make(map[int]*Item, gridSize*gridSize)
 	for _, v := range nodes {
 		nodes2[(v.column+1)*gridSize+v.row] = v
-		nodesArray = append(nodesArray, v)
+		heap.Push(&pq, v)
+
 	}
 	nodes = nodes2
 
-	for i := range nodesArray {
-		nodesArray[i].visited = false
-		nodesArray[i].risk = math.MaxInt
-	}
-
 	startTwo := getNode(0, 0)
-	startTwo.risk = 0
+	startTwo.priority = 0
 
 	endTwo := getNode(gridSize-1, gridSize-1)
 
 	startTwo.visitNeighbors()
 
 	for i := 0; !endTwo.visited; i++ {
-		nextNode, s := nextNode(nodesArray)
+		nextNode := heap.Pop(&pq).(*Item)
 		nextNode.visitNeighbors()
-		nodesArray = append(nodesArray[:s], nodesArray[s+1:]...)
 	}
 
-	return partOne, endTwo.risk
-}
-
-func nextNode(n []*node) (*node, int) {
-	next := &node{risk: math.MaxInt, cost: -1}
-	selected := -1
-	for i := range n {
-		if !n[i].visited && n[i].risk < next.risk {
-			next = n[i]
-			selected = i
+	for _, v := range nodes {
+		if v.priority == math.MaxInt {
+			fmt.Print("max")
 		}
 	}
-	return next, selected
+	return partOne, endTwo.priority
 }
 
-func (n *node) visitNeighbors() {
+func (n *Item) visitNeighbors() {
 	var neighbours = [][]int{{0, -1}, {1, 0}, {0, 1}, {-1, 0}}
 
 	for _, direction := range neighbours {
 		next := getNode(n.column+direction[0], n.row+direction[1])
 		if next != nil && !next.visited {
-			d := n.risk + next.cost
-			if d < next.risk {
-				next.risk = d
+			d := n.priority + next.value
+			if d < next.priority {
+				//next.risk = d
+				pq.update(next, next.value, d)
 			}
 		}
 	}
 	n.visited = true
 }
 
-func getNode(column, row int) (n *node) {
+func getNode(column, row int) (n *Item) {
 	if column < 0 || row < 0 || column > gridSize-1 || row > gridSize-1 {
 		return nil
 	}
 
 	n, ok := nodes[(column+1)*gridSize+row]
 	if !ok {
-		newCost := (getNode(column%origGridSize, row%origGridSize).cost+column/origGridSize+row/origGridSize-1)%9 + 1
-		n = &node{
-			cost:   newCost,
-			risk:   math.MaxInt,
-			column: column,
-			row:    row,
+		newCost := (getNode(column%origGridSize, row%origGridSize).value+column/origGridSize+row/origGridSize-1)%9 + 1
+		n = &Item{
+			value:    newCost,
+			priority: math.MaxInt,
+			visited:  false,
+			column:   column,
+			row:      row,
 		}
 		nodes[(column+1)*gridSize+row] = n
-		nodesArray = append(nodesArray, n)
+		heap.Push(&pq, n)
 		return
 	}
 	return
@@ -159,6 +155,7 @@ type node struct {
 	risk    int
 	column  int
 	row     int
+	index   int
 }
 
 func print(n [][]*node) {
