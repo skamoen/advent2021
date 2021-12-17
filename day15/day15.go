@@ -23,10 +23,11 @@ var origGridSize int
 var gridSize int
 
 var nodesArray []*node
+var inputFile = "./day15/input.txt"
 
 func (*d) Run() (int, int) {
 	//file, err := os.Open("./day15/example.txt")
-	file, err := os.Open("./day15/input.txt")
+	file, err := os.Open(inputFile)
 	if err != nil {
 		log.Fatal(err)
 	}

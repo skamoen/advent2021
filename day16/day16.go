@@ -2,7 +2,6 @@ package day16
 
 import (
 	"bufio"
-	"fmt"
 	"github.com/skamoen/advent2021/util"
 	"log"
 	"math"
@@ -18,10 +17,11 @@ func Get() util.Entry {
 }
 
 var versions int64 = 0
+var inputFile = "./day16/input.txt"
 
 func (*d) Run() (int, int) {
 	//file, err := os.Open("./day16/example.txt")
-	file, err := os.Open("./day16/input.txt")
+	file, err := os.Open(inputFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -46,15 +46,18 @@ func (*d) Run() (int, int) {
 		"F": "1111",
 	}
 
+	versions = 0
 	binaryString := ""
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
+		rawData := make([]byte, len(line)*4)
 		for i := range line {
 			u := string(line[i])
-			binaryString += hexConvert[u]
+			copy(rawData[i*4:i*4+4], hexConvert[u])
 		}
+		binaryString = string(rawData)
 	}
 
 	_, p := parsePacket(binaryString, 0)
@@ -138,27 +141,18 @@ func parsePacket(binaryString string, i int) (int, *packet) {
 			}
 			p.Value = max
 		case 5:
-			if len(p.SubPackets) != 2 {
-				fmt.Println("operator 5 doesn't have two sub packets")
-			}
 			if p.SubPackets[0].Value > p.SubPackets[1].Value {
 				p.Value = 1
 			} else {
 				p.Value = 0
 			}
 		case 6:
-			if len(p.SubPackets) != 2 {
-				fmt.Println("operator 6 doesn't have two sub packets")
-			}
 			if p.SubPackets[0].Value < p.SubPackets[1].Value {
 				p.Value = 1
 			} else {
 				p.Value = 0
 			}
 		case 7:
-			if len(p.SubPackets) != 2 {
-				fmt.Println("operator 7 doesn't have two sub packets")
-			}
 			if p.SubPackets[0].Value == p.SubPackets[1].Value {
 				p.Value = 1
 			} else {
@@ -170,9 +164,8 @@ func parsePacket(binaryString string, i int) (int, *packet) {
 }
 
 type packet struct {
-	Version       int64
-	TypeId        int64
-	Value         int64
-	RawSubPackets string
-	SubPackets    []*packet
+	Version    int64
+	TypeId     int64
+	Value      int64
+	SubPackets []*packet
 }
