@@ -33,18 +33,15 @@ func (*d) Run() (int, int) {
 	x := 0
 	y := 0
 
-	vX, vY := 6, 9
-	highest := y
+	vX, vY := 1, 0
 	nVelocity := 0
 
 	for dx := 1; dx <= maxX; dx++ {
-		for dy := minY; dy < maxX; dy++ {
+		for dy := minY; dy < -minY; dy++ {
 			vX = dx
 			vY = dy
 
 			x, y = 0, 0
-
-			currentTop := 0
 
 			target, abort := false, false
 			for i := 0; !target && !abort; i++ {
@@ -62,22 +59,16 @@ func (*d) Run() (int, int) {
 				// Gravity
 				vY--
 
-				if y > currentTop {
-					currentTop = y
-				}
 				target, abort = inTargetArea(x, y)
 
 				if target {
 					nVelocity++
-					if currentTop > highest {
-						highest = currentTop
-					}
 				}
 			}
 		}
 	}
 
-	return highest, nVelocity
+	return minY * (minY + 1) / 2, nVelocity
 }
 
 func inTargetArea(x, y int) (bool, bool) {
