@@ -35,18 +35,21 @@ func (*d) Run() (int, int) {
 	}
 	defer file.Close()
 
+	init := true
+
 	column := 0
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
 
 		for row := range line {
-			if nodes == nil {
+			if init {
 				nodes = make(map[int]*Item, len(line))
 				origGridSize = len(line)
 				gridSize = len(line)
 				pq = make(PriorityQueue, 0, len(line)*len(line))
 				heap.Init(&pq)
+				init = false
 			}
 			c, _ := strconv.Atoi(string(line[row]))
 			newNode := &Item{
