@@ -18,31 +18,56 @@ func Get() util.Entry {
 
 var inputFile = "./day18/input.txt"
 
+//var inputFile = "./day18/example.txt"
+
 func (*d) Run() (int, int) {
 	file, err := os.Open(inputFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
-	var previousLine []*valueNode
+
+	var lines = make([][]valueNode, 0, 100)
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-
 		values := parseLine(line)
-
-		if previousLine != nil {
-			values = add(previousLine, values)
-			values = reduce(values)
-		}
-		previousLine = values
-
+		lines = append(lines, values)
 	}
-	return magnitude(previousLine), 0
+
+	var addValues = lines[0]
+	maxMag := 0
+	for i := 1; i <= len(lines); i++ {
+		if i < len(lines) {
+			addValues = add(addValues, lines[i])
+			addValues = reduce(addValues)
+		}
+
+		for j := 1; j <= len(lines); j++ {
+			if i != j {
+				addA := add(lines[i-1], lines[j-1])
+				reduceA := reduce(addA)
+				magA := magnitude(reduceA)
+
+				addB := add(lines[j-1], lines[i-1])
+				reduceB := reduce(addB)
+				magB := magnitude(reduceB)
+
+				if magA > maxMag {
+					maxMag = magA
+				}
+				if magB > maxMag {
+					maxMag = magB
+				}
+			}
+		}
+	}
+
+	return magnitude(addValues), maxMag
 }
 
-func magnitude(values []*valueNode) int {
+func magnitude(values []valueNode) (n int) {
 	for len(values) > 1 {
 		for i := range values {
 			if values[i].depth == values[i+1].depth {
@@ -58,18 +83,17 @@ func magnitude(values []*valueNode) int {
 	return values[0].value
 }
 
-func add(a, b []*valueNode) []*valueNode {
-	for i := range a {
-		a[i].depth++
+func add(a, b []valueNode) []valueNode {
+	var v = make([]valueNode, len(a)+len(b))
+	copy(v[:len(a)], a)
+	copy(v[len(a):], b)
+	for i := range v {
+		v[i].depth++
 	}
-	for i := range b {
-		b[i].depth++
-	}
-
-	return append(a, b...)
+	return v
 }
 
-func parseLine(line string) (values []*valueNode) {
+func parseLine(line string) (values []valueNode) {
 	depth := 0
 	for i := 0; i < len(line); i++ {
 		switch string(line[i]) {
@@ -95,7 +119,7 @@ func parseLine(line string) (values []*valueNode) {
 			}
 
 			v, _ := strconv.Atoi(line[i : i+valueUntil])
-			values = append(values, &valueNode{depth, v})
+			values = append(values, valueNode{depth, v})
 			i += valueUntil - 1
 
 		}
@@ -103,24 +127,27 @@ func parseLine(line string) (values []*valueNode) {
 	return
 }
 
-func reduce(values []*valueNode) []*valueNode {
+func reduce(values []valueNode) []valueNode {
 	for {
-		//fmt.Println("Values length:", len(values))
-		var explode bool
-		explode, values = tryExplode(values)
-		if explode {
-			continue
+		if len(values) > 2 {
+			var explode bool
+			explode, values = tryExplode(values)
+			if explode {
+				continue
+			}
+			var split bool
+			split, values = trySplit(values)
+			if split {
+				continue
+			}
+			return values
+		} else {
+			return values
 		}
-		var split bool
-		split, values = trySplit(values)
-		if split {
-			continue
-		}
-		return values
 	}
 }
 
-func trySplit(values []*valueNode) (bool, []*valueNode) {
+func trySplit(values []valueNode) (bool, []valueNode) {
 	for i := range values {
 		if values[i].value > 9 {
 			left := values[i].value / 2
@@ -128,9 +155,9 @@ func trySplit(values []*valueNode) (bool, []*valueNode) {
 
 			values[i].value = left
 			values[i].depth++
-			newNode := &valueNode{values[i].depth, right}
+			newNode := valueNode{values[i].depth, right}
 			arrayEnd := append(
-				[]*valueNode{newNode},
+				[]valueNode{newNode},
 				values[i+1:]...,
 			)
 			values = append(
@@ -144,27 +171,21 @@ func trySplit(values []*valueNode) (bool, []*valueNode) {
 
 }
 
-func tryExplode(values []*valueNode) (bool, []*valueNode) {
+func tryExplode(values []valueNode) (bool, []valueNode) {
 	for i := range values {
-		if values[i].depth > 4 {
+		if values[i].depth > 4 && values[i+1].depth == values[i].depth {
 			goLeft := values[i].value
 			if i > 0 {
-				//fmt.Println("Left", i, ": Adding", goLeft, "to", values[i-1].value)
 				values[i-1].value += goLeft
 			}
 
 			goRight := values[i+1].value
 			if i < len(values)-2 {
-				//fmt.Println("Right", i, ": Adding", goRight, "to", values[i+2].value)
 				values[i+2].value += goRight
-
 			}
 
-			//fmt.Println("Setting", values[i+1].value, "to zero, depth", values[i+1].depth, "to", values[i+1].depth-1)
 			values[i+1].depth--
 			values[i+1].value = 0
-
-			//fmt.Println("removing", values[i].value, "to from the array")
 
 			values = append(values[:i], values[i+1:]...)
 			return true, values

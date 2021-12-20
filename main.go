@@ -42,6 +42,7 @@ func main() {
 		day15.Get(),
 		day16.Get(),
 		day17.Get(),
+		day18.Get(),
 	}
 
 	fmt.Println("--- TODAY ---")
