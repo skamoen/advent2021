@@ -19,6 +19,8 @@ var inputFile = "./day21/input.txt"
 
 //var inputFile = "./day21/example.txt"
 
+var scores map[int]int
+
 func (*d) Run() (int, int) {
 	file, err := os.Open(inputFile)
 	if err != nil {
@@ -69,5 +71,45 @@ func (*d) Run() (int, int) {
 		partOne = gamedata[2] * diceRolls
 	}
 
+	scores = make(map[int]int, 2)
+	a := player{
+		position: 4,
+	}
+	b := player{
+		position: 8,
+	}
+	roll(a, b, 1, 1)
+	roll(a, b, 2, 1)
+	roll(a, b, 3, 1)
+
 	return partOne, 0
+}
+func roll(one, two player, thisRoll int, turn int) {
+	var currentPlayer *player
+	if turn%2 != 0 {
+		currentPlayer = &one
+	} else {
+		currentPlayer = &two
+	}
+
+	// Position
+	newPosition := currentPlayer.position + thisRoll
+	if newPosition > 10 {
+		newPosition = newPosition % 10
+	}
+	currentPlayer.score += newPosition
+
+	if currentPlayer.score >= 21 {
+		scores[turn%2]++
+		return
+	} else {
+		roll(one, two, 1, turn+1)
+		roll(one, two, 2, turn+1)
+		roll(one, two, 3, turn+1)
+	}
+}
+
+type player struct {
+	score    int
+	position int
 }
