@@ -19,6 +19,8 @@ import (
 	"github.com/skamoen/advent2021/day15"
 	"github.com/skamoen/advent2021/day16"
 	"github.com/skamoen/advent2021/day17"
+	"github.com/skamoen/advent2021/day18"
+	"github.com/skamoen/advent2021/day21"
 	"github.com/skamoen/advent2021/util"
 	"time"
 )
@@ -43,10 +45,14 @@ func main() {
 		day16.Get(),
 		day17.Get(),
 		day18.Get(),
+		util.Nop(),
+		util.Nop(),
+		day21.Get(),
 	}
 
 	fmt.Println("--- TODAY ---")
 	start := time.Now()
+	//today := 18
 	today := start.Day()
 	if len(days) <= today {
 		fmt.Println("Day", today, "not implemented yet")

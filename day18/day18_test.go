@@ -5,7 +5,7 @@ import "testing"
 func Test_magnitude(t *testing.T) {
 	tests := []struct {
 		name   string
-		values []*valueNode
+		values []valueNode
 		want   int
 	}{
 		// TODO: Add test cases.
