@@ -17,9 +17,8 @@ func Get() util.Entry {
 
 var inputFile = "./day21/input.txt"
 
-//var inputFile = "./day21/example.txt"
-
-var scores map[int]int
+var states map[int][2]int
+var rolls map[int]int
 
 func (*d) Run() (int, int) {
 	file, err := os.Open(inputFile)
@@ -40,6 +39,18 @@ func (*d) Run() (int, int) {
 	}
 
 	gamedata = append(gamedata, 0, 0)
+
+	states = make(map[int][2]int)
+	rolls = make(map[int]int, 27)
+	preroll()
+	p1Wins, p2Wins := roll(gamedata[0], gamedata[1], 0, 0)
+
+	var partTwo = 0
+	if p1Wins > p2Wins {
+		partTwo = p1Wins
+	} else {
+		partTwo = p2Wins
+	}
 
 	diceRolls := 0
 	currentPlayer := 0 // Gamedata index
@@ -71,45 +82,46 @@ func (*d) Run() (int, int) {
 		partOne = gamedata[2] * diceRolls
 	}
 
-	scores = make(map[int]int, 2)
-	a := player{
-		position: 4,
-	}
-	b := player{
-		position: 8,
-	}
-	roll(a, b, 1, 1)
-	roll(a, b, 2, 1)
-	roll(a, b, 3, 1)
-
-	return partOne, 0
-}
-func roll(one, two player, thisRoll int, turn int) {
-	var currentPlayer *player
-	if turn%2 != 0 {
-		currentPlayer = &one
-	} else {
-		currentPlayer = &two
-	}
-
-	// Position
-	newPosition := currentPlayer.position + thisRoll
-	if newPosition > 10 {
-		newPosition = newPosition % 10
-	}
-	currentPlayer.score += newPosition
-
-	if currentPlayer.score >= 21 {
-		scores[turn%2]++
-		return
-	} else {
-		roll(one, two, 1, turn+1)
-		roll(one, two, 2, turn+1)
-		roll(one, two, 3, turn+1)
-	}
+	return partOne, partTwo
 }
 
-type player struct {
-	score    int
-	position int
+func preroll() {
+	for i := 1; i < 4; i++ {
+		for j := 1; j < 4; j++ {
+			for k := 1; k < 4; k++ {
+				rolls[i+j+k]++
+			}
+		}
+	}
+}
+func roll(onePosition, twoPosition, oneScore, twoScore int) (int, int) {
+	if oneScore >= 21 {
+		return 1, 0
+	} else if twoScore >= 21 {
+		return 0, 1
+	}
+	// "Hash" of the gamestate
+	state := onePosition<<32 +
+		twoPosition<<16 +
+		oneScore<<8 +
+		twoScore
+
+	if outcome, ok := states[state]; ok {
+		return outcome[0], outcome[1]
+	}
+
+	var p1Wins, p2Wins int
+	for sum, freq := range rolls {
+		// Position
+		newPosition := onePosition + sum
+		if newPosition > 10 {
+			newPosition = newPosition % 10
+		}
+
+		p2Win, p1Win := roll(twoPosition, newPosition, twoScore, oneScore+newPosition)
+		p1Wins += p1Win * freq
+		p2Wins += p2Win * freq
+	}
+	states[state] = [2]int{p1Wins, p2Wins}
+	return p1Wins, p2Wins
 }
