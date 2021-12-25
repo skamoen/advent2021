@@ -20,6 +20,7 @@ import (
 	"github.com/skamoen/advent2021/day16"
 	"github.com/skamoen/advent2021/day17"
 	"github.com/skamoen/advent2021/day18"
+	"github.com/skamoen/advent2021/day20"
 	"github.com/skamoen/advent2021/day21"
 	"github.com/skamoen/advent2021/util"
 	"time"
@@ -46,7 +47,7 @@ func main() {
 		day17.Get(),
 		day18.Get(),
 		util.Nop(),
-		util.Nop(),
+		day20.Get(),
 		day21.Get(),
 	}
 

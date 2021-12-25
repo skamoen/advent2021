@@ -30,6 +30,21 @@ func PrintGrid(g [][]int) {
 
 }
 
+func PrintGridImage(g [][]int) {
+	for i := range g {
+		for j := range g[i] {
+			if g[i][j] == 0 {
+				fmt.Print(".")
+			} else {
+				fmt.Print("#")
+			}
+		}
+		fmt.Print("\n")
+	}
+	fmt.Println()
+
+}
+
 func MostCommon(bits [][]string, pos int) string {
 	zeroes, ones := Count(bits, pos)
 	if zeroes == ones {
