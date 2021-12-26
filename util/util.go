@@ -5,6 +5,8 @@ import (
 	"sort"
 )
 
+var binarySum []int = []int{1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024}
+
 type Entry interface {
 	Run() (int, int)
 }
@@ -43,6 +45,14 @@ func PrintGridImage(g [][]int) {
 	}
 	fmt.Println()
 
+}
+
+func UintBinaryToDecimal(b []uint8) int {
+	sum := 0
+	for i := range b {
+		sum += int(b[len(b)-1-i]) * binarySum[i]
+	}
+	return sum
 }
 
 func MostCommon(bits [][]string, pos int) string {

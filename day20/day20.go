@@ -5,7 +5,6 @@ import (
 	"github.com/skamoen/advent2021/util"
 	"log"
 	"os"
-	"strconv"
 )
 
 type d struct {
@@ -22,6 +21,13 @@ var inputFile = "./day20/input.txt"
 type imageType [][]int
 
 var iea string
+var ieaLookup []int
+var binarySum = []int{1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024}
+
+var neighbours = [][2]int{
+	{-1, -1}, {-1, 0}, {-1, 1},
+	{0, -1}, {0, 0}, {0, 1},
+	{1, -1}, {1, 0}, {1, 1}}
 
 func (*d) Run() (int, int) {
 	file, err := os.Open(inputFile)
@@ -35,6 +41,14 @@ func (*d) Run() (int, int) {
 	scanner := bufio.NewScanner(file)
 	scanner.Scan()
 	iea = scanner.Text() // Skip newline
+	ieaLookup = make([]int, len(iea))
+	for i := range iea {
+		if string(iea[i]) == "." {
+			ieaLookup[i] = 0
+		} else {
+			ieaLookup[i] = 1
+		}
+	}
 	scanner.Scan()
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -107,29 +121,20 @@ func (i imageType) expandCanvas() imageType {
 }
 
 func (i imageType) enhance(r, c int, d int) int {
-	var neighbours = [][2]int{
-		{-1, -1}, {-1, 0}, {-1, 1},
-		{0, -1}, {0, 0}, {0, 1},
-		{1, -1}, {1, 0}, {1, 1}}
-	var lookup string
+	sum := 0
 
-	for _, neighbour := range neighbours {
+	for j, neighbour := range neighbours {
 		if r+neighbour[0] < 0 || r+neighbour[0] >= len(i) || c+neighbour[1] < 0 || c+neighbour[1] >= len(i[r]) {
-			lookup += strconv.Itoa(d)
+			if d == 1 {
+				sum += binarySum[8-j]
+			}
 		} else {
 			n := i[r+neighbour[0]][c+neighbour[1]]
-			lookup += strconv.Itoa(n)
+			if n == 1 {
+				sum += binarySum[8-j]
+			}
 		}
 	}
 
-	index, err := strconv.ParseInt(lookup, 2, 32)
-	if err != nil {
-		log.Fatal("Cant convert lookup")
-	}
-
-	if string(iea[index]) == "#" {
-		return 1
-	} else {
-		return 0
-	}
+	return ieaLookup[sum]
 }
